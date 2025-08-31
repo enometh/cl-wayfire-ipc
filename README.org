@@ -1,0 +1,16 @@
+* cl-wayfire-ipc
+
+A Common Lisp wrapper for interacting with Wayfire's IPC based on the
+implementation at https://github.com/WayfireWM/pywayfire
+
+Dependencies:
+- uiop, alexandria, babel
+- usocket for network sockets.
+(tested with enometh/usocket usocket & usocket-iolib)
+- com.inuoe.jzon (jzon) for json
+
+
+
+
+
+
