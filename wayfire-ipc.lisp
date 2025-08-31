@@ -78,10 +78,61 @@
 		 (ldb (byte 8 (* 8 i)) int) out  sizeof))))
     out))
 
-(defun get-msg-template (method)
-  (alexandria:plist-hash-table
-   (list "method" method "data" (make-hash-table :test #'equal))
-   :test #'equal))
+;; ht->x, x->ht - visualise hash-tables recursively. (hash-table is a
+;; poor choice because the ordering of keys--which the user may find
+;; useful--is lost.)
+
+(defun ht->x (obj &optional (x :alist))
+  (etypecase obj
+    (hash-table
+     (ecase x
+       (:plist (let ((keys (sort (alexandria:hash-table-keys obj) #'string<)))
+		 (loop for k in keys for v = (gethash k obj)
+		       append (list k (ht->x v x)))))
+       (:alist (sort (loop for (k . v) in (alexandria:hash-table-alist obj)
+			   collect (cons k (ht->x v x)))
+		     #'string< :key #'car))))
+    (string obj)
+    (vector (map 'vector (lambda (a) (ht->x a x)) obj))
+    (atom obj)))
+
+(defun x->ht (obj &optional (x :alist))
+  (etypecase obj
+    (cons (ecase x
+	    (:plist (alexandria:plist-hash-table
+		     (loop for (k v) on obj by #'cddr
+			   append (list k (x->ht v x)))))
+	    (:alist (alexandria:alist-hash-table
+		     (loop for (k . v) in obj
+			   collect (cons k (x->ht v x)))))))
+    (string obj)
+    (vector (map 'vector (lambda (a) (x->ht a x)) obj))
+    (atom obj)))
+
+(defun get-msg-template (method &rest data-key-val-plist)
+  "Returns a object (hash-table) of the form
+{ \"method\": method-name,
+   \"data\": { \"key1\": \"val1\",
+               \"key2\": \"val2\", .. }}"
+  (let ((data (apply #'alexandria:plist-hash-table
+		     data-key-val-plist
+		     (list :test #'equal))))
+    (alexandria:plist-hash-table
+     (list "method" method "data" data)
+     :test #'equal)))
+
+#||
+(com.inuoe.jzon:stringify
+ (get-msg-template "window-rules/output-info" "id" 1)
+ :pretty t)
+
+"{
+  \"method\": \"window-rules/output-info\",
+  \"data\": {
+    \"id\": 1
+  }
+}"
+||#
 
 (defun geometry-to-json (x y w h)
   (alexandria:plist-hash-table
@@ -120,6 +171,17 @@
 		       (t (return response))))
 		(t (error "Response timeout"))))))
 
+(defun read-next-event (c)
+  (if $pending-events
+      (pop $pending-events)
+      (read-message c)))
+
+(defun list-methods (c)
+  (gethash "methods" (send-json c (get-msg-template "list-methods"))))
+
+(defun get-output (c output-id)
+  (send-json c (get-msg-template "window-rules/output-info"
+			       "id" output-id)))
 
 #+nil
 (defvar $c (open-wayfire-socket))
@@ -128,4 +190,8 @@
 (close-wayfire-socket $c)
 (setq $c (open-wayfire-socket))
 (setq $ret (send-json $c (get-msg-template "wayfire/configuration")))
+(ht->x $ret :alist)
+(list-methods $c)
+(ht->x (get-output $c 1) :plist)
+(ht->x (send-json $c (get-msg-template  "wayfire/get-keyboard-state")))
 ||#
