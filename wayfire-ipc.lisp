@@ -38,10 +38,11 @@
 	(bytes-remaining n))
     (loop while (> bytes-remaining 0) do
 	  (multiple-value-bind (return-buffer length remote-host remote-port)
-	      (usocket:socket-receive c $response-buffer bytes-remaining)
+	      (usocket:socket-receive c $response-buffer (min bytes-remaining (length $response-buffer)))
 	    (declare (ignorable remote-host remote-port))
 	    (assert (eql return-buffer $response-buffer))
-	    (when (<= (decf bytes-remaining length) 0)
+	    (when (and (<= (decf bytes-remaining length) 0)
+		       (not response))
 	      (assert (zerop bytes-remaining))
 	      (return-from read-exact (subseq $response-buffer 0 n)))
 	    (unless response
