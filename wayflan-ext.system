@@ -12,6 +12,28 @@
   (merge-pathnames "wayflan-ext/" (translate-logical-pathname "EXTERN:")))
 (defvar *wayflan-ext-binary-dir* (binary-directory *wayflan-ext-source-dir*))
 
+(mk:defsystem :wayflan-client/protocols
+  :source-pathname *wayflan-ext-source-dir*
+  :binary-pathname *wayflan-ext-binary-dir*
+  :source-extension "lisp"
+  :depends-on (:wayflan-client/base)
+  :components ((:module "client"
+		:components ((:file "wayland-protocol")
+			     (:file "stable-protocols"
+			       :depends-on ("wayland-protocol"))))))
+
+#+nil
+(mk:oos :wayflan-client/protocols :load :compile-during-load t)
+
+(mk:defsystem :wayflan-client
+  :source-pathname *wayflan-ext-source-dir*
+  :binary-pathname *wayflan-ext-binary-dir*
+  :source-extension "lisp"
+  :depends-on (:wayflan-client/base :wayflan-client/protocols))
+
+#+nil
+(mk:oos :wayflan-client :load :compile-during-load t)
+
 (mk:defsystem :wayflan-ext
    :source-pathname *wayflan-ext-source-dir*
    :binary-pathname *wayflan-ext-binary-dir*
