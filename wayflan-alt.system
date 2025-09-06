@@ -1,0 +1,37 @@
+;;; -*- Mode: LISP; Package: :cl-user; BASE: 10; Syntax: ANSI-Common-Lisp; -*-
+;;;
+;;;   Time-stamp: <>
+;;;   Touched: Sat Sep 06 22:46:14 2025 +0530 <enometh@net.meer>
+;;;   Bugs-To: enometh@net.meer
+;;;   Status: Experimental.  Do not redistribute
+;;;   Copyright (C) 2025 Madhu.  All Rights Reserved.
+;;;
+(in-package "CL-USER")
+
+(defvar *wayflan-source-dir*
+  (merge-pathnames "Codeberg/wayflan/" (translate-logical-pathname "EXTERN:")))
+(defvar *wayflan-binary-dir* (binary-directory *wayflan-alt-source-dir*))
+
+(mk:defsystem :wayflan-client/base
+  :source-pathname *wayflan-source-dir*
+  :binary-pathname *wayflan-binary-dir*
+  :source-extension "lisp"
+  :depends-on ("alexandria" "babel" "cffi" "cffi-grovel" "plump" "closer-mop")
+  :components ((:module "src"
+		:components
+		((:file "packages")
+		 (:file "protocol" :depends-on ("packages"))
+		 (:file "types" :depends-on ("packages"))
+		 (:file "grovel" :depends-on ("packages") :language :cffi-grovel)
+		 (:file "ffi" :depends-on ("grovel"))
+		 (:file "conditions" :depends-on ("packages" "ffi"))
+		 (:file "wire" :depends-on ("ffi" "types" "conditions"))
+		 (:module "client"
+		  :components ((:file "packages")
+			       (:file "client" :depends-on ("packages"))
+			       (:file "scanner" :depends-on ("client"))
+			       (:file "asdf" :depends-on ("scanner")
+				:if-feature :asdf)))))))
+
+#+nil
+(mk:oos :wayflan-client/base :load :compile-during-load t)
