@@ -1,0 +1,10 @@
+* wayflan-ext
+
+wayfan-ext extends wayflan https://git.sr.ht/~shunter/wayflan/ in
+certain ways.  It does not use asdf.  The non-protocol spec portions
+of wayflan/common and wayfan-client systems factored out for
+reuse. (wayflan-alt.system). this is then used to to generate lisp
+source files on disk which implement protocols (rather than expanding
+the macros in memory). wayflan package names are renamed to be
+friendlier for the debugger. examples that wrap up extensions are
+included.
