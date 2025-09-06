@@ -10,7 +10,13 @@
 (load "~/cl/extern/wayflan-ext/wayflan-ext.system")
 
 #+nil
-(mk:oos :wayflan-client :compile)
+(mk:oos :wayflan-client-ext :compile)
 
 #+nil
 (mk:oos :wayflan-ext :compile)
+
+#+nil
+(mk:oos :wayflan-hyprctm :load :compile-during-load t)
+
+#+nil
+(mk:oos :wayflan-wlr-gammactl :load :compile-during-load t)

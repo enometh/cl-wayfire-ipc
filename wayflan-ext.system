@@ -44,3 +44,23 @@
 
 #+nil
 (mk:oos :wayflan-ext :load :compile-during-load t)
+
+(mk:defsystem :wayflan-client/unstable-protocols
+  :source-pathname *wayflan-ext-source-dir*
+  :binary-pathname *wayflan-ext-binary-dir*
+  :source-extension "lisp"
+  :depends-on (:wayflan-client/protocols)
+  :components ((:module "client"
+		:components ((:file "unstable-protocols")))))
+
+#+nil
+(mk:oos :wayflan-client/unstable-protocols :load :compile-during-load t)
+
+(mk:defsystem :wayflan-client-ext
+  :source-pathname *wayflan-ext-source-dir*
+  :binary-pathname *wayflan-ext-binary-dir*
+  :source-extension "lisp"
+  :depends-on (:wayflan-client :wayflan-client/unstable-protocols))
+
+#+nil
+(mk:oos :wayflan-client-ext :load :compile-during-load t)
