@@ -7,6 +7,10 @@
 (load "~/cl/extern/Github/cl-pango/cl-pango.system")
 (load "~/cl/extern/Github/input-event-codes/input-event-codes.system")
 (load "~/cl/extern/wayflan-ext/wayflan-alt.system")
+(load "~/cl/extern/wayflan-ext/wayflan-ext.system")
 
 #+nil
 (mk:oos :wayflan-client/base :compile)
+
+#+nil
+(mk:oos :wayflan-ext :compile)
