@@ -9,6 +9,9 @@
 (load "~/cl/extern/wayflan-ext/wayflan-alt.system")
 (load "~/cl/extern/wayflan-ext/wayflan-ext.system")
 
+(unless (cffi:find-foreign-library "libwayland-client")
+  (cffi:load-foreign-library "libwayland-client.so"))
+
 #+nil
 (mk:oos :wayflan-client-ext :compile)
 
@@ -20,3 +23,17 @@
 
 #+nil
 (mk:oos :wayflan-wlr-gammactl :load :compile-during-load t)
+
+
+;;; ----------------------------------------------------------------------
+;;;
+;;; user intf
+;;;
+(in-package "WAYFLAN-EXT")
+
+#+nil
+(defvar $c (make-client-state))
+#+nil
+(disconnect $c)
+#+nil
+(connect $c)

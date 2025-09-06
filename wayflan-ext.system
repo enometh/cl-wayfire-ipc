@@ -38,8 +38,12 @@
    :source-pathname *wayflan-ext-source-dir*
    :binary-pathname *wayflan-ext-binary-dir*
    :source-extension "lisp"
+   :depends-on (:wayflan-client)
    :components (
 		"packages"
+		"rename-shunter-pkgs"
+		"user"
+		"util"
                ))
 
 #+nil
