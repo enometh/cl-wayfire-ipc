@@ -10,13 +10,14 @@
 
 (defvar *wayfire-ipc-source-dir*
   (merge-pathnames "cl-wayfire-ipc/" (translate-logical-pathname "EXTERN:")))
-(defvar *wayfire-ipc-binary-dir* (binary-directory *wayfire-ipc-source-dir*))
+(defvar *wayfire-ipc-binary-dir* (binary-directory *wayfire-ipc-source-dir*
+						   #+usocket-iolib "usocket-iolib"))
 
 (mk:defsystem :wayfire-ipc
    :source-pathname *wayfire-ipc-source-dir*
    :binary-pathname *wayfire-ipc-binary-dir*
    :source-extension "lisp"
-   :depends-on ("uiop" "alexandria" "babel" "jzon")
+   :depends-on ("uiop" "alexandria" "babel" "usocket" "jzon")
    :components (
 		"wayfire-ipc"
                ))
