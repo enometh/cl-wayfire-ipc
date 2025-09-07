@@ -33,6 +33,21 @@
 
 (defvar $response-buffer (make-array 8192 :element-type '(unsigned-byte 8)))
 
+#+usocket-iolib
+(defun read-exact (c n)
+  (let ((response-buffer (make-array n :element-type '(unsigned-byte 8)
+				     #+lispworks :allocation
+				     #+lispworks :pinnable)))
+    (multiple-value-bind (return-buffer length remote-host remote-port)
+	(usocket:socket-receive c response-buffer (length response-buffer))
+      (declare (ignorable return-buffer length remote-host remote-port))
+      #+nil
+      (format t "read-exact: socket-recv: same-buffer-p=~A, length=~A remote=~S~%"
+	      (eql response-buffer return-buffer) length
+	      (list remote-host remote-port))
+      response-buffer)))
+
+#-usocket-iolib
 (defun read-exact (c n)
   (let ((response nil)
 	(bytes-remaining n))
