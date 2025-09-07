@@ -43,3 +43,7 @@
 (setup-gamma-control $c)
 #+nil
 (set-gammactl $c  .9 .98 .9 0.89)
+
+;; hyprctm
+#+nil
+(ctm-set-saturation $c 0.5)
