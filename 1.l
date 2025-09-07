@@ -37,3 +37,9 @@
 (disconnect $c)
 #+nil
 (connect $c)
+
+;; wlr-gammactl
+#+nil
+(setup-gamma-control $c)
+#+nil
+(set-gammactl $c  .9 .98 .9 0.89)
