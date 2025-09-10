@@ -56,6 +56,10 @@
 	  (assert (endp (cdr nicknames)))
 	  (package-promote nick))))))
 
+;; add a nickname so we can rename it later
+(rename-package "XYZ.SHUNTER.WAYFLAN.CLIENT.SCANNER"
+		"XYZ.SHUNTER.WAYFLAN.CLIENT.SCANNER"
+		'("WAYFLAN-CLIENT.SCANNER"))
 (mapcar 'rename-shunter-package (find-packages-matching "XYZ.SHUNTER"))
 
 #||
