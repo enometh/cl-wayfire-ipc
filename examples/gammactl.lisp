@@ -138,22 +138,23 @@
 	  (data->array (ramp-data $r) (client-state-gamma-size $c))))
 ||#
 
+(defmacro with-ramp ((ramp) &body body)
+  `(let ((,ramp (make-ramp)))
+     (unwind-protect (progn ,@body)
+       (dispose-ramp ramp))))
 
 (defun set-gammactl (c r g b gamma)
   (with-slots (gamma-size) c
-    (let ((ramp (make-ramp)))
-      (unwind-protect
-	   (progn
-	     (init-ramp ramp c)
-	     (with-slots (data fd) ramp
-	       (fill-gamma-ramp-table data gamma-size r g b gamma)
-	       (wayflan-client.wlr-gamma-control:zwlr-gamma-control-v1.set-gamma
-		(get-gamma-control c)
-		fd)))
-	(dispose-ramp ramp)))))
+    (with-ramp (ramp)
+      (init-ramp ramp c)
+      (with-slots (data fd) ramp
+	(fill-gamma-ramp-table data gamma-size r g b gamma)
+	(wayflan-client.wlr-gamma-control:zwlr-gamma-control-v1.set-gamma
+	 (get-gamma-control c)
+	 fd)))))
 
 #+nil
-(set-gammactl $c  0.9 0.9 0.9 1.2)
+(set-gammactl $c  1.0 1.0 1.0 1.0)
 
 #||
 (defun unlink (path)
