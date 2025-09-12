@@ -91,22 +91,38 @@
      (assert (<= val2 65535))
      (truncate val2)))
 
-#+nil
-(defun make-gamma-table (gamma-size r g b gamma)
-  (let ((ramp (make-array (* 3 gamma-size)
-			  #+nil :element-type #+nil
+(defun make-rgb-array (gamma-size r g b gamma)
+  (let ((array (make-array `(3 ,gamma-size)
+			   #+nil :element-type #+nil
+			   `(integer 0 ,(1- (expt 2 16))))))
+    (loop for i below gamma-size
+	  for val = (float (/  i (- gamma-size 1)))
+	  do (setf (aref array 0 i) (expt (* val r) (/ 1.0 gamma))
+		   (aref array 1 i) (expt (* val g) (/ 1.0 gamma))
+		   (aref array 2 i) (expt (* val b) (/ 1.0 gamma))))
+    array))
+
+(defun make-gamma-table-via-rgb-array (gamma-size r g b gamma)
+  (let ((array (make-rgb-array gamma-size r g b gamma))
+	(ramp (make-array (* 3 gamma-size)
+			  ;;#+nil
+			  :element-type ;; #+nil
 			  `(integer 0 ,(1- (expt 2 16))))))
     (loop for i below gamma-size
 	  for j = (+ i gamma-size)
 	  for k = (+ j gamma-size)
-	  for val = (float (/  i (- gamma-size 1)))
-	  do (setf (aref ramp i) (coerce-to-uint16 (expt (* val r) (/ 1.0 gamma)))
-		   (aref ramp j) (coerce-to-uint16 (expt (* val g) (/ 1.0 gamma)))
-		   (aref ramp k) (coerce-to-uint16 (expt (* val b) (/ 1.0 gamma)))))
+	  do (setf (aref ramp i) (coerce-to-uint16 (aref array 0 i))
+		   (aref ramp j) (coerce-to-uint16 (aref array 1 i))
+		   (aref ramp k) (coerce-to-uint16 (aref array 2 i))))
     ramp))
 
 (defun fill-gamma-ramp-table (data gamma-size r g b gamma)
   (declare (optimize (debug 3) (speed 0) (safety 3)))
+  (cffi:with-pointer-to-vector-data
+      (ptr (make-gamma-table-via-rgb-array gamma-size r g b gamma))
+    (cffi:foreign-funcall "memcpy" :pointer data :pointer ptr
+			  :int (* 3 gamma-size 2))))
+  #+nil
   (loop for i below gamma-size
 	for j = (+ i gamma-size)
 	for k = (+ j gamma-size)
