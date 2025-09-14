@@ -18,7 +18,7 @@
       (if axis
           (numcl:concatenate (make-list n :initial-element array) :axis axis)
           (numcl:flatten
-           (numcl:concatenate (make-list n :initial-element (numcl:reshape array `(,@(shape array) -1))) :axis -1)))
+           (numcl:concatenate (make-list n :initial-element (numcl:reshape array `(,@(numcl:shape array) -1))) :axis -1)))
       (progn
         (assert (null axis))
         (numcl:full n array))))
@@ -31,12 +31,12 @@
 	 (a-shape (numcl:shape a)))
     (when (< (length a-shape) d)
       (warn "resizing dims a")
-      (setq a (reshape a `(,@(make-list (- d (length a-shape))
+      (setq a (numcl:reshape a `(,@(make-list (- d (length a-shape))
 					:initial-element 1)
 			     ,@a-shape ))))
-    (when (< d (length (shape a)))
+    (when (< d (length (numcl:shape a)))
       (warn "resizing reps")
-      (setq reps `(,@(make-list (- (length (shape a)) d)
+      (setq reps `(,@(make-list (- (length (numcl:shape a)) d)
 				:initial-element 1)
 		     ,@reps)))
     (assert (= (length reps) (ndim a)))
@@ -56,8 +56,16 @@
 	      do (setq n (truncate n dim-in))))
       (numcl:reshape c shape-out))))
 
+(defun ndim (array)
+  (length (array-dimensions array)))
+
+
+;;; ----------------------------------------------------------------------
+;;;
 ;;; linear gamma ramp heuristics from psychopy:
 ;;; psychopy/visual/backends/gamma.py
+;;;
+
 
 (defun linramp (ramp-type ramp-size)
   (let ((a256 (/  ramp-size 4.0))

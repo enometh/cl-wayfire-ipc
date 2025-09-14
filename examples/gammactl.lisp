@@ -121,7 +121,7 @@
   (cffi:with-pointer-to-vector-data
       (ptr (make-gamma-table-via-rgb-array gamma-size r g b gamma))
     (cffi:foreign-funcall "memcpy" :pointer data :pointer ptr
-			  :int (* 3 gamma-size 2))))
+			  :int (* 3 gamma-size 2)))
   #+nil
   (loop for i below gamma-size
 	for j = (+ i gamma-size)

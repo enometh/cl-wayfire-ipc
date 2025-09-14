@@ -86,6 +86,17 @@
 #+nil
 (mk:oos :wayflan-wlr-gammactl :load :compile-during-load t)
 
+(mk:defsystem :wayflan-wlr-gammactl-psychopy
+  :source-pathname *wayflan-ext-source-dir*
+  :binary-pathname *wayflan-ext-binary-dir*
+  :source-extension "lisp"
+  :depends-on (:wayflan-wlr-gammactl :numcl)
+  :components ((:module "examples"
+		:components ("gammactl-psychopy"))))
+
+#+nil
+(mk:oos :wayflan-wlr-gammactl-psychopy :load :compile-during-load t)
+
 (mk:defsystem :wayflan-hyprctm
   :source-pathname *wayflan-ext-source-dir*
   :binary-pathname *wayflan-ext-binary-dir*
