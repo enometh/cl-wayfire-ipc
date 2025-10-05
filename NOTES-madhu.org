@@ -1,0 +1,38 @@
+* scratchpad notes
+** my local config
+#+begin_src lisp
+(in-package "CL-USER")
+(require 'alexandria)
+;; use usocket-iolib
+(load "~/cl/extern/usocket-iolib/usocket-iolib.system")
+(user:push-feature :usocket-iolib)
+(require 'usocket-iolib)
+;; otherwise use usocket with native sockets
+(load "~/cl/extern/usocket-iolib/usocket.system")
+(user:pop-feature :usocket-iolib)
+(require 'usocket)
+(load "~/cl/extern/Github/jzon/jzon.system")
+(load "~/cl/extern/cl-wayfire-ipc/wayfire-ipc.system")
+(require 'wayfire-ipc)
+#+end_src
+
+** adjust hue and saturation with glsl
+#+begin_src lisp
+(defpackage "WAYFIRE-IPC-USER"
+  (:use "CL" "WAYFIRE-IPC"))
+(in-package "WAYFIRE-IPC-USER")
+
+(defvar $c (open-wayfire-socket))
+(list-methods $c)
+(close-wayfire-socket $c)
+
+(progn
+  (setq $m (get-msg-template
+	    "wf/filters/set-fs-shader"
+	    "output-name" "eDP-1"
+	    "shader-path"
+	    (mk::system-relative-pathname :wayfire-ipc
+					  "shaders/saturate.glsl")))
+  (setq $ret (send-json $c $m))
+  (ht->x $ret))
+#+end_src
