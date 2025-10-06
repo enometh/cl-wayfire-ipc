@@ -9,7 +9,12 @@
 ;;;  Ref: https://github.com/WayfireWM/pywayfire/raw/master/wayfire/ipc.py
 ;;;
 (defpackage "WAYFIRE-IPC"
-  (:use "CL"))
+  (:use "CL")
+  (:export "$PENDING-EVENTS" "$RESPONSE-BUFFER" "$SOCKET-TIMEOUT"
+   "BYTES-TO-INT" "CLOSE-WAYFIRE-SOCKET" "GEOMETRY-TO-JSON" "GET-MSG-TEMPLATE"
+   "GET-OUTPUT" "GET-WAYFIRE-SOCKET-PATH" "HT->X" "INT-TO-BYTES"
+   "LIST-METHODS" "MAKE-HEADER" "MAKE-MESSAGE" "OPEN-WAYFIRE-SOCKET"
+   "READ-EXACT" "READ-MESSAGE" "READ-NEXT-EVENT" "SEND-JSON" "X->HT"))
 (in-package "WAYFIRE-IPC")
 
 (defun get-wayfire-socket-path
