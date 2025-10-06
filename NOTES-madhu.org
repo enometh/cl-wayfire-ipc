@@ -26,6 +26,7 @@
 (list-methods $c)
 (close-wayfire-socket $c)
 
+,#+nil
 (progn
   (setq $m (get-msg-template
 	    "wf/filters/set-fs-shader"
@@ -35,4 +36,14 @@
 					  "shaders/saturate.glsl")))
   (setq $ret (send-json $c $m))
   (ht->x $ret))
+
+(def-simple-f "wf/filters/set-fs-shader" "output-name" "shader-path")
+(def-simple-f "wf/filters/unset-fs-shader" "output-name")
+
+(wf/filters/set-fs-shader
+ $c 'output-name "eDP-1"
+ 'shader-path
+ (mk::system-relative-pathname :wayfire-ipc
+			       "shaders/saturate.glsl"))
+(wf/filters/unset-fs-shader $c 'output-name "eDP-1")
 #+end_src
