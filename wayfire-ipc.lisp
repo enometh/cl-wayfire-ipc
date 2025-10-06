@@ -11,7 +11,8 @@
 (defpackage "WAYFIRE-IPC"
   (:use "CL")
   (:export "$PENDING-EVENTS" "$RESPONSE-BUFFER" "$SOCKET-TIMEOUT"
-   "BYTES-TO-INT" "CLOSE-WAYFIRE-SOCKET" "GEOMETRY-TO-JSON" "GET-MSG-TEMPLATE"
+   "BYTES-TO-INT" "CLOSE-WAYFIRE-SOCKET" "DEF-SIMPLE-F"
+   "GEOMETRY-TO-JSON" "GET-MSG-TEMPLATE"
    "GET-OUTPUT" "GET-WAYFIRE-SOCKET-PATH" "HT->X" "INT-TO-BYTES"
    "LIST-METHODS" "MAKE-HEADER" "MAKE-MESSAGE" "OPEN-WAYFIRE-SOCKET"
    "READ-EXACT" "READ-MESSAGE" "READ-NEXT-EVENT" "SEND-JSON" "X->HT"))
@@ -199,6 +200,40 @@
 
 (defun list-methods (c)
   (gethash "methods" (send-json c (get-msg-template "list-methods"))))
+
+
+;;; PORCELAIN - def-simple-f
+;;;
+;;; ;madhu 251006 - the ipc methods should really be defined by an xml
+;;; like the rest of wayfire.
+;;;
+;;; don't intern the kargs of the functions we define in the lisp
+;;; KEYWORD package and pollute it. maybe we should not use keywords
+;;; at all but just positional arguments?
+
+(defmacro def-simple-f (method-name &rest args)
+  "USAGE: (def-simple-f \"method-name\" \"arg1\" ...)
+method-name and args are strings corresponding to the exposed wayfire
+ipc api."
+  (let ((fname (intern (string-upcase method-name) "WAYFIRE-IPC"))
+	(kargs (mapcar (lambda (x) (intern (string-upcase x) "WAYFIRE-IPC"))
+		       args)))
+    `(progn
+       (export ',(cons fname kargs) "WAYFIRE-IPC")
+       (defun ,fname (c &key ,@(loop for a in kargs collect `((,a ,a))))
+	 (let* ((m (get-msg-template ,method-name
+				     ,@(loop for a in args for k in kargs
+					     append (list a k))))
+		(ret (send-json c m)))
+	   (values (ht->x ret) ret))))))
+
+#||
+(def-simple-f  "window-rules/list-outputs")
+(window-rules/list-outputs $c)
+(macroexpand-1 '(def-simple-f "wf/filters/unset-fs-shader" "output-name"))
+(wf/filters/unset-fs-shader $c 'output-name "eDP-1")
+||#
+
 
 (defun get-output (c output-id)
   (send-json c (get-msg-template "window-rules/output-info"
