@@ -25,6 +25,7 @@
 (list-methods $c)
 (close-wayfire-socket $c)
 
+,#+nil
 (progn
   (setq $m (get-msg-template
 	    "wf/filters/set-fs-shader"
@@ -34,4 +35,23 @@
 					  "shaders/saturate.glsl")))
   (setq $ret (send-json $c $m))
   (ht->x $ret))
+
+(def-simple-f "wf/filters/set-fs-shader" "output-name" "shader-path")
+(def-simple-f "wf/filters/unset-fs-shader" "output-name")
+(def-simple-f "wf/filters/fs-has-shader" "output-name")
+
+(wf/filters/set-fs-shader
+ $c 'output-name "eDP-1"
+ 'shader-path
+ (mk::system-relative-pathname :wayfire-ipc
+			       "shaders/saturate.glsl"))
+(wf/filters/unset-fs-shader $c 'output-name "eDP-1")
+(wf/filters/fs-has-shader $c 'output-name "eDP-1"); ewouldblock handled
+; => (("has-shader") ("result" . "ok")), #<HASH-TABLE :TEST EQUAL :COUNT 2 {120495AB43}>
+(wf/filters/set-fs-shader $c 'output-name "eDP-1"
+			  'shader-path
+			  "/7/gtk/wayfire-plugins-extra/subprojects/filters/shaders/monochrome")
+(wf/filters/set-fs-shader $c  'output-name "eDP-1"
+			  'shader-path
+			  "/7/gtk/wayfire-plugins-extra/subprojects/filters/shaders/rounded-corners")
 #+end_src
