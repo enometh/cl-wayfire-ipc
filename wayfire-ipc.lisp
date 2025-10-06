@@ -187,7 +187,7 @@
   (let (response)
     (loop (cond ((usocket:wait-for-input c :timeout $socket-timeout)
 		 (setq response (read-message c))
-		 (cond ((gethash "event" response)
+		 (cond ((and (hash-table-p response) (gethash "event" response))
 			(push response $pending-events))
 		       (t (return response))))
 		(t (error "Response timeout"))))))
