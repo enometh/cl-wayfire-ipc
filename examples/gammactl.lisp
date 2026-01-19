@@ -105,6 +105,8 @@
 (defun make-gamma-table-via-rgb-array (gamma-size r g b gamma)
   (let ((array (make-rgb-array gamma-size r g b gamma))
 	(ramp (make-array (* 3 gamma-size)
+			  #+lispworks :allocation
+			  #+lispworks :pinnable
 			  ;;#+nil
 			  :element-type ;; #+nil
 			  `(integer 0 ,(1- (expt 2 16))))))
