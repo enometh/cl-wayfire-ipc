@@ -194,6 +194,10 @@
    :test #'equal))
 
 (defun read-message (c)
+  "Blocking Read a message from the connection.
+BEWARE. No part of WAYFIRE-IPC is thread safe. So make sure you only
+have one pending READ-MESSAGE call any time. (call it from a single
+thread.)"
   (let* ((rlen (bytes-to-int (read-exact c 4)))
 	 (response-message (read-exact c rlen)))
     (com.inuoe.jzon:parse
@@ -227,6 +231,10 @@
 		(t (error "Response timeout"))))))
 
 (defun read-next-event (c)
+  "Read the next event or return NIL after $SOCKET-TIMEOUT seconds.
+BEWARE. No part of WAYFIRE-IPC is thread safe. So make sure you only
+have one pending call to READ-NEXT-EVENT at any time. (call it from a
+single thread.)"
   (if $pending-events
       (pop $pending-events)
       (cond ((and (usocket:wait-for-input c :timeout $socket-timeout)
