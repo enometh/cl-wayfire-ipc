@@ -13,6 +13,7 @@
   (:export "$PENDING-EVENTS" "$RESPONSE-BUFFER" "$SOCKET-TIMEOUT"
    "BYTES-TO-INT" "CLOSE-WAYFIRE-SOCKET" "DEF-SIMPLE-F"
    "GEOMETRY-TO-JSON" "GET-MSG-TEMPLATE"
+   "CALL-IPC"
    "GET-OUTPUT" "GET-WAYFIRE-SOCKET-PATH" "HT->X" "INT-TO-BYTES"
    "LIST-METHODS" "MAKE-HEADER" "MAKE-MESSAGE" "OPEN-WAYFIRE-SOCKET"
    "READ-EXACT" "READ-MESSAGE" "READ-NEXT-EVENT" "SEND-JSON" "X->HT"))
@@ -239,10 +240,18 @@
 				 response))))))
 	    (t (values nil :timeout)))))
 
+(defun call-ipc (c method-name &rest msg-template-args)
+  "Call method METHOD-NAME on connection C. MSG-TEMPLATE-ARGS
+are an alternating list of string paramter name and lisp value, which
+the method takes.  The specification of the types of the parameters
+are in the C++ code plugins/ipc-rules/ipc-rules.cpp and other files
+there."
+  (let* ((m (apply #'get-msg-template msg-name msg-template-args))
+	 (ret (send-json c m)))
+    ret))
 
 (defun list-methods (c)
-  (gethash "methods" (send-json c (get-msg-template "list-methods"))))
-
+  (gethash "methods" (call-ipc c "list-methods")))
 
 ;;; PORCELAIN - def-simple-f
 ;;;
@@ -314,8 +323,7 @@ ipc api. place optional args after a :&optional marker."
 
 
 (defun get-output (c output-id)
-  (send-json c (get-msg-template "window-rules/output-info"
-			       "id" output-id)))
+  (call-ipc c  "window-rules/output-info" "id" output-id))
 
 #+nil
 (defvar $c (open-wayfire-socket))
