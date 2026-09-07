@@ -259,6 +259,9 @@ args. returns 2 values the the required args and the optional args."
   (parse-simple-f-args '("id" "geometry" :&optional "tiled")))
  '(("id" "geometry") ("tiled")))
 
+(defun string->karg (x)
+  (intern (string-upcase x) "WAYFIRE-IPC"))
+
 (defmacro def-simple-f (method-name &rest args)
   "USAGE: (def-simple-f \"method-name\" \"arg1\" ...)
 method-name and args are strings corresponding to the exposed wayfire
