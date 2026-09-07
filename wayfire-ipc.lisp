@@ -210,28 +210,61 @@
 ;;; don't intern the kargs of the functions we define in the lisp
 ;;; KEYWORD package and pollute it. maybe we should not use keywords
 ;;; at all but just positional arguments?
+;;;
+;;; ;madhu 260907 extend def-simple-f to accept an &optional marker in
+;;; ARGS. args before the &:optional marker are required and those
+;;; after it are treated as optional.
+
+(defun parse-simple-f-args (args)
+  "ARGS is a list of strings but may contain an optional
+:&OPTIONAL keyword marker that separate required args from optional
+args. returns 2 values the the required args and the optional args."
+  (let* ((optional-cons (member :&optional args)))
+    (values (ldiff args optional-cons) (cdr optional-cons))))
+
+#+nil
+(equal
+ (multiple-value-list
+  (parse-simple-f-args '("id" "geometry" :&optional "tiled")))
+ '(("id" "geometry") ("tiled")))
 
 (defmacro def-simple-f (method-name &rest args)
   "USAGE: (def-simple-f \"method-name\" \"arg1\" ...)
 method-name and args are strings corresponding to the exposed wayfire
-ipc api."
-  (let ((fname (intern (string-upcase method-name) "WAYFIRE-IPC"))
-	(kargs (mapcar (lambda (x) (intern (string-upcase x) "WAYFIRE-IPC"))
-		       args)))
+ipc api. place optional args after a :&optional marker."
+  (let ((fname (string->karg method-name)) rargs oargs rkargs okargs osupps)
+    (multiple-value-setq (rargs oargs) (parse-simple-f-args args))
+    (setq rkargs (mapcar 'string->karg rargs))
+    (setq okargs (mapcar 'string->karg oargs))
+    (setq osupps (mapcar 'string->karg
+			 (loop for arg in oargs
+			       collect (concatenate 'string arg
+						    "-supplied-p"))))
     `(progn
-       (export ',(cons fname kargs) "WAYFIRE-IPC")
-       (defun ,fname (c &key ,@(loop for a in kargs collect `((,a ,a))))
-	 (let* ((m (get-msg-template ,method-name
-				     ,@(loop for a in args for k in kargs
-					     append (list a k))))
-		(ret (send-json c m)))
-	   (values (ht->x ret) ret))))))
+       (export '(,fname ,@rkargs ,@okargs ,@osupps ) "WAYFIRE-IPC")
+       (defun ,fname (c &key
+		      ,@(loop for a in rkargs collect `((,a ,a)))
+		      ,@(loop for a in okargs for b in osupps
+			      collect `((,a ,a) nil ,b)))
+	   (let* ((m (apply #'get-msg-template
+			    ,method-name
+			    (append
+			     ,@(loop for a in rargs for k in rkargs
+				    collect `(list ,a ,k))
+			     ,@(loop for a in oargs
+				     for k in okargs
+				     for s in osupps
+				     collect `(when ,s
+						(list ,a ,k))))))
+		  (ret (send-json c m)))
+	     (values (ht->x ret) ret))))))
 
 #||
 (def-simple-f  "window-rules/list-outputs")
 (window-rules/list-outputs $c)
 (macroexpand-1 '(def-simple-f "wf/filters/unset-fs-shader" "output-name"))
 (wf/filters/unset-fs-shader $c 'output-name "eDP-1")
+(macroexpand-1 '(def-simple-f "foo/bar" "arg1" :&optional "arg2" "arg3"))
 ||#
 
 
