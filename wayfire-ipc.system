@@ -20,6 +20,7 @@
    :depends-on ("uiop" "alexandria" "babel" "usocket" "jzon")
    :components (
 		"wayfire-ipc"
+		"subscribe"
                ))
 
 #+nil
