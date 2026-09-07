@@ -74,6 +74,37 @@
 				  length))))
     response))
 
+;;#+nil(ensure-ctf:ensure-ctf :usocket-iolib)
+;;
+;; trigger an error if the file was compiled with :usocket-iolib in
+;; the features and is being loaded in an environment where the
+;; feature is not present (and vice-versa). this expands the
+;; ensure-ctf macro from the eponymous package name instead of
+;; depending on that package.
+(progn
+  (defvar *compile-time-value-definer* nil)
+  (defvar g347 nil)
+  (setq *compile-time-value-definer* nil)
+  (eval-when (:compile-toplevel)
+    (setq *compile-time-value-definer*
+	  `(setq g347 ',(eval
+			 '(read-from-string
+			   (format nil "(~{#+~(~a~) t ~:*#-~(~a~) nil~^ ~})"
+			    '(:usocket-iolib)))))))
+  (eval-when (:compile-toplevel :load-toplevel :execute)
+    (macrolet ((define-compile-time-value () *compile-time-value-definer*))
+      (eval-when (:load-toplevel :execute)
+        (define-compile-time-value)))))
+(eval-when (:load-toplevel :execute)
+   (let ((mismatches (loop :for ctf :in g347
+			   :for feat :in '(:usocket-iolib)
+			   unless (eq ctf
+				      (and (find feat *features*) t))
+			   append (list feat :ctv))))
+     (assert (endp mismatches) nil
+	 "~{~(~s~) was ~:[absent~;present~] at compile time but is ~:*~:[present~;absent~] at runtime.~^~%~}"
+       mismatches)))
+
 (defun bytes-to-int (byte-array &key (start 0) end (endian :little-endian))
   (let ((unsigned-value 0))
     (loop for i from start below (or end (length byte-array))
