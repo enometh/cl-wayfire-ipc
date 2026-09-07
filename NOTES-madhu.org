@@ -40,6 +40,7 @@
 (def-simple-f "wf/filters/unset-fs-shader" "output-name")
 (def-simple-f "wf/filters/fs-has-shader" "output-name")
 
+#||
 (wf/filters/set-fs-shader
  $c 'output-name "eDP-1"
  'shader-path
@@ -54,4 +55,34 @@
 (wf/filters/set-fs-shader $c  'output-name "eDP-1"
 			  'shader-path
 			  "/7/gtk/wayfire-plugins-extra/subprojects/filters/shaders/rounded-corners")
+||#
+#+end_src
+
+** resize a window
+#+begin_src lisp
+(def-simple-f "window-rules/list-views")
+
+(def-simple-f "window-rules/configure-view"
+  "id"
+  :&optional
+  "geometry"
+  "output-id" ;optional-uint64
+  "sticky" ;optional-bool
+  "tiled-edges" ;optional-uint64
+  "fullscreen" ;optional-bool
+  )
+
+(defun find-views (c app-id &optional ($ret (window-rules/list-views c)))
+  (loop for x across $ret
+	if (equal app-id (cdr (assoc "app-id" x :test #'equal)))
+	collect x))
+
+(defun view-id (view)
+  (cdr (assoc "id" view :test #'equal)))
+
+,#+nil
+(window-rules/configure-view
+ $c
+ 'id  (car (mapcar 'view-id (find-views $c "UXTerm")))
+ 'geometry (geometry-to-json 0 0 800 600))
 #+end_src
