@@ -217,7 +217,8 @@
     (usocket:socket-send c data (length data)))
   (finish-output (usocket:socket-stream c))
   (let (response)
-    (loop (cond ((usocket:wait-for-input c :timeout $socket-timeout)
+    (loop (cond ((and (usocket:wait-for-input c :timeout $socket-timeout)
+		      (member (usocket:socket-state c) '(:read :read-write)))
 		 (setq response (read-message c))
 		 (cond ((and (hash-table-p response) (gethash "event" response))
 			(push response $pending-events))
@@ -227,7 +228,17 @@
 (defun read-next-event (c)
   (if $pending-events
       (pop $pending-events)
-      (read-message c)))
+      (cond ((and (usocket:wait-for-input c :timeout $socket-timeout)
+		  (member (usocket:socket-state c) '(:read :read-write)))
+	     (let ((response (read-message c)))
+	       (cond ((and (hash-table-p response) (gethash "event" response))
+		      response)
+		     (t
+		      (with-simple-restart (cont "Cont")
+			(error "read-next-event: read a non-event ~S"
+				 response))))))
+	    (t (values nil :timeout)))))
+
 
 (defun list-methods (c)
   (gethash "methods" (send-json c (get-msg-template "list-methods"))))
