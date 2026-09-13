@@ -254,7 +254,7 @@ are an alternating list of string paramter name and lisp value, which
 the method takes.  The specification of the types of the parameters
 are in the C++ code plugins/ipc-rules/ipc-rules.cpp and other files
 there."
-  (let* ((m (apply #'get-msg-template msg-name msg-template-args))
+  (let* ((m (apply #'get-msg-template method-name msg-template-args))
 	 (ret (send-json c m)))
     ret))
 
